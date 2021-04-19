@@ -1,0 +1,97 @@
+from threading import Thread 
+import random
+import socket
+import utils
+import json
+import time 
+import sys 
+import os 
+
+
+def create_listener(port):
+	maxtries = 3; created = False
+	s = []
+	while maxtries > 0 and not created:
+		try:
+			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			s.bind(('0.0.0.0', port))
+			s.listen(5)
+			created = True
+		except socket.error:
+			print('[!] Unable to create socket')
+			time.sleep(5)
+			pass
+		maxtries -= 1
+	if not created:
+		exit()
+	return s
+
+def client_handler(csock, caddr, logfile):
+	# Get their request
+	request = ''; t0 = time.time()
+	waiting = True; timeout = 3.0
+	try:
+		while waiting and (time.time() - t0) < timeout:
+			request = csock.recv(1024)
+			waiting = False
+	except socket.error:
+		print('[!!] Unable to get request from %s' % caddr[0])
+		waiting = False
+		pass
+	# Maybe send something silly
+	csock.send(b'Are you supposed to be Here?\n')
+	# Log Everything 
+	data = {'IP': caddr[0], 'Req': request}
+	ld, lt = utils.create_timestamp()
+	try:
+		parsed = json.dumps(data)
+	except:
+		pass
+		parsed = '{"%s" : "%s"' % (caddr[0], request)
+	entry = ('Connection at %s - %s :\n'%(ld,lt)) +parsed+'\n'+'='*80+'\n'
+	open('logs/'+logfile, 'a').write(entry)
+	return True
+
+class BasicTrap:
+	served = []
+	uptime = 0.0
+
+	def __init__(self, p):
+		if not os.path.isdir('logs'):
+			os.mkdir('logs')
+		self.inbound = p
+		self.start = time.time()
+		self.run()
+
+	def run(self):
+		running = True
+		serve = create_listener(self.inbound)
+		self.log = self.create_log()
+		ld, lt = utils.create_timestamp()
+		print('[*] Honeypot Started [%s - %s]' % (ld,lt))
+		try:
+			while running:
+				c, ci = serve.accept()
+				print('[*] %s:%d has connected :D' % (ci[0], ci[1]))
+				handler = Thread(target=client_handler, args=(c, ci, self.log))
+				handler.run()
+				c.close()
+		except KeyboardInterrupt:
+			running = False 
+			
+
+	def create_log(self):
+		ld,lt = utils.create_timestamp()
+		fn = ld.replace('/', '-') + '_' + lt.replace(':','-')+'.log'
+		if not os.path.isfile(fn):
+			open('logs/'+fn, 'w').write('Starting HoneyPot [%s - %s]\n' % (ld, lt))
+		return  fn
+
+
+def main():
+	port = 8080
+	if '-run' in sys.argv:
+		BasicTrap(port)
+
+if __name__ == '__main__':
+	main()
