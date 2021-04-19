@@ -19,6 +19,7 @@ TOKEN = os.getenv('TOKEN')
 GUILD = os.getenv('GUILD')
 ABUSE = os.getenv('ABUSE')
 SERVE = os.getenv('HONEY')
+HOSTN = os.getenv('HOSTN')
 
 # Load client and Set command prefix
 bot = commands.Bot(command_prefix = "$")
@@ -90,7 +91,7 @@ async def report_abuse(ctx, ip, comment, categories):
 @bot.command(name='list-logs',pass_context=True)
 async def list_log_files(ctx):
 	await ctx.send('*Getting list of log files*')
-	c = 'ssh n0d3@%s ls -la HomeAlone/code/logs'%SERVE
+	c = 'ssh %s@%s ls -la HomeAlone/code/logs'% (HOSTN,SERVE)
 	result = '```' + (utils.arr2str(utils.cmd(c,False)))+'```'
 	try:
 		await ctx.send(result)
@@ -104,12 +105,13 @@ async def ipinfo(ctx, ip):
 	response = requests.request(method='GET', url=link)
 	await ctx.send('```'+json.dumps(response.text).replace('\n','')+'```')
 
+
 @bot.command(name='read-log', pass_context=True)
 async def read_log(ctx, filename):
-	c = f'ssh n0d3@{SERVE} ls HomeAlone/code/logs'
+	c = f'ssh {HOSTN}@{SERVE} ls HomeAlone/code/logs'
 	if filename in utils.cmd(c,False):
 		await ctx.send('**This will take a minute...**')
-		c = f"sftp n0d3@{SERVE}:/home/n0d3/HomeAlone/code/logs <<< $'get {filename}'"
+		c = f"sftp {HOSTN}@{SERVE}:/home/{HOSTN}/HomeAlone/code/logs <<< $'get {filename}'"
 		utils.arr2str(utils.cmd(c,False))
 		f = open(filename, 'r')
 		while True:
