@@ -27,4 +27,26 @@ Using the discord bot you can retrieve and view these logs in real time as well 
 "{\n  \"ip\": \"46.43.113.22\",\n  \"hostname\": \"adsl-46.43.113.22.mada.ps\",\n  \"city\": \"Ramallah\",\n  \"region\": \"West Bank\",\n  \"country\": \"PS\",\n  \"loc\": \"31.8996,35.2042\",\n  \"org\": \"AS51407 Mada ALArab LTD\",\n  \"timezone\": \"Asia/Hebron\",\n  \"readme\": \"https://ipinfo.io/missingauth\"\n}"
 ```
 
-**working on a feature for automated reporting to AbuseIPDB.com **
+**working on a feature for automated reporting to AbuseIPDB.com**
+
+## Setup 
+Because this needs  to be run on the public internet, you can try changing to port 8080, adding a lower privilege user an running from that account. By default this is setup to run to grab headers and requests of HTTP traffic on port 80 by default. 
+
+Create a `.env` file in the `/HomeAlone/code/` Directory. This is where you should put:
+```
+HONEY=IP_ADDRESS_OF_HONEY_POT
+HOSTN=HOST_NAME_OF_HONEY_POT_USER
+TOKEN=DISCORD_BOT_API_TOKEN
+ABUSE=FREE_ABUSE_IPDB_API_TOKEN 
+``` 
+Last one is optional (and not fully functional yet). 
+
+### Creating a discord bot 
+Once you have the code running on your honeypot, you can go [here](https://discord.com/developers/applications) and add the DiscordBot add-on. 
+
+The bot needs permissions for reading/writing into channels, adding reactions/emojis/embeds. 
+
+
+### Contributing 
+I would be happy to have more experienced people help me improve this project. If you want to 
+make contributions feel free to make a pull request, and we can chat about how to make this more effective. 
