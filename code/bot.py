@@ -20,7 +20,7 @@ GUILD = os.getenv('GUILD')
 ABUSE = os.getenv('ABUSE')
 SERVE = os.getenv('HONEY')
 HOSTN = os.getenv('HOSTN')
-
+ARMED = True;
 # Load client and Set command prefix
 bot = commands.Bot(command_prefix = "$")
 
@@ -87,6 +87,50 @@ async def report_abuse(ctx, ip, comment, categories):
 	# # Formatted output
 	await ctx.send('```'+json.dumps(response.text)+'```')
 
+async def check_alarm(ctx,filename,n):
+	print('[-] Checking Alarm File')
+	while ARMED:
+			await asyncio.sleep(30)
+			try:
+				c = f"sftp {HOSTN}@{SERVE}:/home/{HOSTN}/HomeAlone/code/logs <<< $'get {filename}'"
+				utils.arr2str(utils.cmd(c,False))
+				N = int(utils.cmd("cat %s| grep 'Connection at ' | wc -l" % filename, False).pop())
+				if N > n:
+					m = '{0.author.mention} **New Connection <a:siren:833794872204722248> **'.format(ctx.message)
+					m += '```' + utils.arr2str(utils.cmd(f"tail -n 10 {filename} ",False))+'```'
+					await ctx.send(m)
+			except IndexError:
+				print('[!] Unable to read log file')
+				pass
+
+@bot.command(name='kill-honey', pass_context=True)
+async def kill_process(ctx):
+	c = 'sudo kill -9 $(pid of python)'
+	utils.cmd(c,False)
+	await ctx.send()
+
+
+@bot.command(name='alert-me', pass_context=True)
+async def set_alarm(ctx, filename):
+	try:
+		c = f"sftp {HOSTN}@{SERVE}:/home/{HOSTN}/HomeAlone/code/logs <<< $'get {filename}'"
+		utils.arr2str(utils.cmd(c,False))
+		n = int(utils.cmd("cat %s| grep 'Connection at ' | wc -l" % filename, False).pop())
+		await ctx.send('*Setting Alarm on %s*, which currently has **%d** entries.' % (filename, n))
+		ARMED = True
+		bot.loop.create_task(check_alarm(ctx,filename,n))
+	except:
+		c = 'ssh %s@%s ls -la HomeAlone/code/logs'% (HOSTN,SERVE)
+		result = 'Something went wrong... Select one of these to set alarm on:\n'
+		result += '```' + (utils.arr2str(utils.cmd(c,False)))+'```'	
+		pass
+
+
+@bot.command(name='disarm',pass_context=True)
+async def disable_alarm(ctx):
+	ARMED = False
+	await ctx.send('**Disabling Alarm on %s**' % (filename, n))
+
 
 @bot.command(name='list-logs',pass_context=True)
 async def list_log_files(ctx):
@@ -98,6 +142,25 @@ async def list_log_files(ctx):
 	except:
 		print(result)
 		pass
+
+@bot.command(name='list-cnx', pass_context=True)
+async def show_connection(ctx):
+	msg = 'Aw Geez, lets see who is connected <:morty:833787268148887623>'.format(ctx.message)
+	await ctx.send(msg)
+	c = 'ssh %s@%s netstat -antup'% (HOSTN,SERVE)
+	result = '```' + (utils.arr2str(utils.cmd(c,False)))+'```'
+	try:
+		await ctx.send(result)
+	except:
+		print(result)
+		pass
+
+
+async def ping_user(ctx):
+	m = "{0.author.mention}".format(ctx.message)
+	await ctx.send(m)
+
+
 
 @bot.command(name='lookup',pass_context=True)
 async def ipinfo(ctx, ip):
