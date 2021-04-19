@@ -30,7 +30,7 @@ async def on_ready():
 	print(f'{bot.user} has connected to Discord!')		
 	print(f'{guild.name}(id: {guild.id})')
 
-@bot.command(name='abuse', pass_context=True)
+@bot.command(name='abusive-acts', pass_context=True)
 async def list_abuse(ctx):
 	#ID	Title	Description
 	abusive=  { 1: 	'Altering DNS records resulting in improper redirection.',
@@ -98,6 +98,11 @@ async def list_log_files(ctx):
 		print(result)
 		pass
 
+@bot.command(name='lookup',pass_context=True)
+async def ipinfo(ctx, ip):
+	link = 'http://ipinfo.io/%s'%ip
+	response = requests.request(method='GET', url=link)
+	await ctx.send('```'+json.dumps(response.text).replace('\n','')+'```')
 
 @bot.command(name='read-log', pass_context=True)
 async def read_log(ctx, filename):
