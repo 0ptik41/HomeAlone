@@ -93,7 +93,7 @@ class BasicTrap:
 
 
 def main():
-	port = 8080
+	port = 80
 	if '-run' in sys.argv:
 		BasicTrap(port)
 
