@@ -39,7 +39,11 @@ def client_handler(csock, caddr, logfile):
 		waiting = False
 		pass
 	# Maybe send something silly
-	csock.send(b'Are you supposed to be Here?\n')
+	if not waiting:
+		try:
+			csock.send(open('page.html','r').read())
+		except socket.error:
+			pass
 	# Log Everything 
 	data = {'IP': caddr[0], 'Req': request}
 	ld, lt = utils.create_timestamp()
@@ -72,7 +76,7 @@ class BasicTrap:
 		try:
 			while running:
 				c, ci = serve.accept()
-				print('[*] %s:%d has connected :D' % (ci[0], ci[1]))
+				print('[*] \033[1m\033[31m%s:%d\033[0m has connected :D' % (ci[0], ci[1]))
 				handler = Thread(target=client_handler, args=(c, ci, self.log))
 				handler.run()
 				c.close()
