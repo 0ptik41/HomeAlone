@@ -20,7 +20,7 @@ GUILD = os.getenv('GUILD')
 ABUSE = os.getenv('ABUSE')
 SERVE = os.getenv('HONEY')
 HOSTN = os.getenv('HOSTN')
-ARMED = True;
+ARMED = True; TRIGGER = 0
 # Load client and Set command prefix
 bot = commands.Bot(command_prefix = "$")
 
@@ -95,9 +95,10 @@ async def check_alarm(ctx,filename,n):
 				c = f"sftp {HOSTN}@{SERVE}:/home/{HOSTN}/HomeAlone/code/logs <<< $'get {filename}'"
 				utils.arr2str(utils.cmd(c,False))
 				N = int(utils.cmd("cat %s| grep 'Connection at ' | wc -l" % filename, False).pop())
-				if N > n:
+				if N > TRIGGER:
+					TRIGGER = N
 					m = '{0.author.mention} **New Connection <a:siren:833794872204722248> **'.format(ctx.message)
-					m += '```' + utils.arr2str(utils.cmd(f"tail -n 10 {filename} ",False))+'```'
+					m += '```' + utils.arr2str(utils.cmd(f"tail -n 3 {filename} ",False))+'```'
 					await ctx.send(m)
 			except IndexError:
 				print('[!] Unable to read log file')
@@ -107,15 +108,21 @@ async def check_alarm(ctx,filename,n):
 async def kill_process(ctx):
 	c = 'sudo kill -9 $(pid of python)'
 	utils.cmd(c,False)
-	await ctx.send()
+	await ctx.send('Honeypot **Killed**')
 
+@bot.command(name='nmap', pass_context=True)
+async def scan_host(ctx, ip):
+	await ctx.send('<a:radar:794818374420529162>    *Scanning* **%s**' % ip)
+	c = 'nmap -sV %s' % ip
+	result = '```' + (utils.arr2str(utils.cmd(c,False)))+'```'
+	await ctx.send(result)
 
 @bot.command(name='alert-me', pass_context=True)
 async def set_alarm(ctx, filename):
 	try:
 		c = f"sftp {HOSTN}@{SERVE}:/home/{HOSTN}/HomeAlone/code/logs <<< $'get {filename}'"
 		utils.arr2str(utils.cmd(c,False))
-		n = int(utils.cmd("cat %s| grep 'Connection at ' | wc -l" % filename, False).pop())
+		TRIGGER = int(utils.cmd("cat %s| grep 'Connection at ' | wc -l" % filename, False).pop())
 		await ctx.send('*Setting Alarm on %s*, which currently has **%d** entries.' % (filename, n))
 		ARMED = True
 		bot.loop.create_task(check_alarm(ctx,filename,n))
