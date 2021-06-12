@@ -24,12 +24,14 @@ ARMED = True; TRIGGER = 0
 # Load client and Set command prefix
 bot = commands.Bot(command_prefix = "$")
 
+
 @bot.event
 async def on_ready():
 	guild = get(bot.guilds, name=GUILD)
 	print(guild)
 	print(f'{bot.user} has connected to Discord!')		
 	print(f'{guild.name}(id: {guild.id})')
+
 
 @bot.command(name='abusive-acts', pass_context=True)
 async def list_abuse(ctx):
@@ -61,6 +63,7 @@ async def list_abuse(ctx):
 	for k in abusive.keys():
 		opts+='%d: %s\n' % (k, abusive[k]) 
 	await ctx.send(opts)
+	await ctx.send('You can make a report like this: `$report 10.0.0.1 "Comment" 1,2`')
 
 
 @bot.command(name='report', pass_context=True)
@@ -77,7 +80,7 @@ async def report_abuse(ctx, ip, comment, categories):
 
 	headers = {
 	    'Accept': 'application/json',
-	    'Key': '$%s' % ABUSE
+	    'Key': '%s' % ABUSE
 	}
 	
 	response = utils.cmd(cmd,True)
@@ -87,32 +90,34 @@ async def report_abuse(ctx, ip, comment, categories):
 	# # Formatted output
 	await ctx.send('```'+json.dumps(response.text)+'```')
 
+
 async def check_alarm(ctx,filename,n):
 	print('[-] Checking Alarm File')
 	while ARMED:
-			await asyncio.sleep(30)
+			await asyncio.sleep(35)
 			try:
-				c = f"sftp {HOSTN}@{SERVE}:/home/{HOSTN}/HomeAlone/code/logs <<< $'get {filename}'"
+				c = f"sftp {HOSTN}@{SERVE}:/home/{HOSTN}/HomeAlone/code/logs/web/ <<< $'get {filename}'"
 				utils.arr2str(utils.cmd(c,False))
 				N = int(utils.cmd("cat %s| grep 'Connection at ' | wc -l" % filename, False).pop())
-				if N > TRIGGER:
-					TRIGGER = N
+				if N > n:
+					n = N
 					m = '{0.author.mention} **New Connection <a:siren:833794872204722248> **'.format(ctx.message)
 					m += '```' + utils.arr2str(utils.cmd(f"tail -n 3 {filename} ",False))+'```'
 					await ctx.send(m)
+					
 			except IndexError:
 				print('[!] Unable to read log file')
 				pass
 
 @bot.command(name='kill-honey', pass_context=True)
 async def kill_process(ctx):
-	c = 'sudo kill -9 $(pid of python)'
-	utils.cmd(c,False)
+	c = "ssh %s@%s ps aux | grep serve.py | cut -d ' ' -f 7 | while read n; do kill -9 $n; done"
+	utils.cmd(c%(HOSTN,SERVE),False)
 	await ctx.send('Honeypot **Killed**')
 
-@bot.command(name='nmap', pass_context=True)
+@bot.command(name='scan', pass_context=True)
 async def scan_host(ctx, ip):
-	await ctx.send('<a:radar:794818374420529162>    *Scanning* **%s**' % ip)
+	await ctx.send('<a:radar:794818374420529162> *Scanning* **%s**' % ip)
 	c = 'nmap -sV %s' % ip
 	result = '```' + (utils.arr2str(utils.cmd(c,False)))+'```'
 	await ctx.send(result)
@@ -120,14 +125,14 @@ async def scan_host(ctx, ip):
 @bot.command(name='alert-me', pass_context=True)
 async def set_alarm(ctx, filename):
 	try:
-		c = f"sftp {HOSTN}@{SERVE}:/home/{HOSTN}/HomeAlone/code/logs <<< $'get {filename}'"
+		c = f"sftp {HOSTN}@{SERVE}:/home/{HOSTN}/HomeAlone/code/logs/web/ <<< $'get {filename}'"
 		utils.arr2str(utils.cmd(c,False))
-		TRIGGER = int(utils.cmd("cat %s| grep 'Connection at ' | wc -l" % filename, False).pop())
-		await ctx.send('*Setting Alarm on %s*, which currently has **%d** entries.' % (filename, n))
+		n = int(utils.cmd("cat %s| grep 'Connection at ' | wc -l" % filename, False).pop())
+		await ctx.send(':ok_hand: *Setting Alarm on %s*, which currently has **%d** entries.' % (filename, n))
 		ARMED = True
 		bot.loop.create_task(check_alarm(ctx,filename,n))
 	except:
-		c = 'ssh %s@%s ls -la HomeAlone/code/logs'% (HOSTN,SERVE)
+		c = 'ssh %s@%s ls -la HomeAlone/code/logs/web/'% (HOSTN,SERVE)
 		result = 'Something went wrong... Select one of these to set alarm on:\n'
 		result += '```' + (utils.arr2str(utils.cmd(c,False)))+'```'	
 		pass
@@ -142,7 +147,7 @@ async def disable_alarm(ctx):
 @bot.command(name='list-logs',pass_context=True)
 async def list_log_files(ctx):
 	await ctx.send('*Getting list of log files*')
-	c = 'ssh %s@%s ls -la HomeAlone/code/logs'% (HOSTN,SERVE)
+	c = 'ssh %s@%s ls -la HomeAlone/code/logs/web/'% (HOSTN,SERVE)
 	result = '```' + (utils.arr2str(utils.cmd(c,False)))+'```'
 	try:
 		await ctx.send(result)
@@ -150,9 +155,30 @@ async def list_log_files(ctx):
 		print(result)
 		pass
 
+@bot.command(name='delete-log', pass_context=True)
+async def delete_log(ctx, logfile):
+	await ctx.send('*Getting list of log files*')
+	c = 'ssh %s@%s ls HomeAlone/code/logs/web/'% (HOSTN,SERVE)
+	if logfile in utils.cmd(c,False):
+		await ctx.send('Cool cool cool. **%s** is gone <a:boom:818243760055779359>' % logfile)
+		c2 = 'ssh %s@%s rm HomeAlone/code/logs/web/%s'% (HOSTN,SERVE,logfile)
+		utils.cmd(c2,False)
+	else:
+		await ctx.send("Can't find %s" % logfile)
+
+@bot.command(name='get-log', pass_context=True)
+async def get_log(ctx, logfile):
+	c = 'ssh %s@%s ls HomeAlone/code/logs/web/'% (HOSTN,SERVE)
+	if logfile in utils.cmd(c,False):
+		await ctx.send('Found %s. Downloading it now.' % logfile)
+		c = f"sftp {HOSTN}@{SERVE}:/home/{HOSTN}/HomeAlone/code/logs/web/ <<< $'get {logfile}'"
+		utils.arr2str(utils.cmd(c,False))
+		await ctx.send('Finished downloading**[%d bytes]**' % os.path.getsize(os.getcwd()+'/%s' % logfile))
+
+
 @bot.command(name='list-cnx', pass_context=True)
 async def show_connection(ctx):
-	msg = 'Aw Geez, lets see who is connected <:morty:833787268148887623>'.format(ctx.message)
+	msg = 'Aw Geez, lets see who is connected <:morty:833787213766066176>'.format(ctx.message)
 	await ctx.send(msg)
 	c = 'ssh %s@%s netstat -antup'% (HOSTN,SERVE)
 	result = '```' + (utils.arr2str(utils.cmd(c,False)))+'```'
@@ -160,6 +186,7 @@ async def show_connection(ctx):
 		await ctx.send(result)
 	except:
 		print(result)
+		await ctx.send('```'+result.split('established)\n')[1:])
 		pass
 
 
@@ -178,10 +205,11 @@ async def ipinfo(ctx, ip):
 
 @bot.command(name='read-log', pass_context=True)
 async def read_log(ctx, filename):
-	c = f'ssh {HOSTN}@{SERVE} ls HomeAlone/code/logs'
+	c = f'ssh {HOSTN}@{SERVE} ls HomeAlone/code/logs/web/'
 	if filename in utils.cmd(c,False):
 		await ctx.send('**This will take a minute...**')
-		c = f"sftp {HOSTN}@{SERVE}:/home/{HOSTN}/HomeAlone/code/logs <<< $'get {filename}'"
+		await ctx.send('<a:rickspin:834261749846507520>')
+		c = f"sftp {HOSTN}@{SERVE}:/home/{HOSTN}/HomeAlone/code/logs/web/ <<< $'get {filename}'"
 		utils.arr2str(utils.cmd(c,False))
 		f = open(filename, 'r')
 		while True:
@@ -189,7 +217,7 @@ async def read_log(ctx, filename):
 			if not piece:
 				break
 			try:
-				await ctx.send('```\n'+piece+'\n```')
+				await ctx.send('```\n'+piece.replace(SERVE,'<removed>')+'\n```')
 				time.sleep(3)
 			except:
 				print(result)

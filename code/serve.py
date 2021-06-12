@@ -65,7 +65,10 @@ class BasicTrap:
 			os.mkdir('logs')
 		self.inbound = p
 		self.start = time.time()
-		self.run()
+		self.worker = Thread(target=self.run, args=())
+		self.worker.setDaemon(True)
+		self.worker.start()
+
 
 	def run(self):
 		running = True
@@ -76,7 +79,7 @@ class BasicTrap:
 		try:
 			while running:
 				c, ci = serve.accept()
-				print('[*] \033[1m\033[31m%s:%d\033[0m has connected :D' % (ci[0], ci[1]))
+				print('[*] \033[1m\033[31m%s:%d\033[0m has connected ' % (ci[0], ci[1]))
 				handler = Thread(target=client_handler, args=(c, ci, self.log))
 				handler.run()
 				c.close()
