@@ -137,6 +137,8 @@ class TripWire:
 		try:
 			while self.watching:
 				try:
+					# Refresh targets in case discord bot has added one
+
 					self.targets, status = verifyFiles(self.lib, self.targets)
 					if status:
 						filesTouched = self.findChangedFile()
@@ -176,12 +178,12 @@ def main():
 		file_list = utils.swap('filelist.txt',False)
 
 	if '-bg' in sys.argv:
-		agent = Thread(target=TripWire, args=(file_list))
+		agent = Thread(target=TripWire, args=(file_list,True))
 		agent.setDaemon(True)
 		agent.start()
 	else:
 		# Now setup the tripwire to monitor the filelist
-		agent = TripWire(file_list)
+		agent = TripWire(file_list,True)
 
 if __name__ == '__main__':
 	main()
