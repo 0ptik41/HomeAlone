@@ -31,7 +31,7 @@ def client_handler(csock, caddr, logfile):
 	waiting = True; timeout = 3.0
 	try:
 		while waiting and (time.time() - t0) < timeout:
-			request = csock.recv(1024)
+			request = csock.recv(1024).decode('utf-8')
 			waiting = False
 	except socket.error:
 		print('[!!] Unable to get request from %s' % caddr[0])
@@ -40,7 +40,7 @@ def client_handler(csock, caddr, logfile):
 	# Maybe send something silly
 	if not waiting:
 		try:
-			csock.send(open('page.html','r').read())
+			csock.send(open('page.html','r').read().encode('utf-8'))
 		except socket.error:
 			pass
 	# Log Everything 
@@ -98,7 +98,8 @@ def main():
 	port = 80
 	if '-run' in sys.argv:
 		os.system('python3 tripwire.py &')
-		BasicTrap(port,useBot=True).run()
+		b = BasicTrap(port,useBot=True)
+		b.run()
 
 if __name__ == '__main__':
 	main()
