@@ -98,7 +98,7 @@ async def check_alarm(ctx,filename,n):
 			try:
 				c = f"sftp {HOSTN}@{SERVE}:/home/{HOSTN}/TripWire/tripwire/.alerts/alarm/ <<< $'get alarm'"
 				utils.arr2str(utils.cmd(c,False))
-				if filename in utils.swap(filename, False):
+				if filename in utils.swap(filename, True):
 					n = N
 					m = '{0.author.mention} **New Connection <a:siren:833794872204722248> **'.format(ctx.message)
 					m += '```' + utils.arr2str(utils.cmd(f"tail -n 3 {filename} ",False))+'```'
@@ -124,10 +124,11 @@ async def scan_host(ctx, ip):
 @bot.command(name='alert-me', pass_context=True)
 async def set_alarm(ctx, filename):
 	try:
-		c = f"sftp {HOSTN}@{SERVE}:/home/{HOSTN}/HomeAlone/code/logs/web/ <<< $'get {filename}'"
+		c = f"sftp {HOSTN}@{SERVE}:/home/{HOSTN}/HomeAlone/code/logs/web/ <<< $'get {filename}'\n"
+		c += f"ssh {HOSTN}@{SERVER} echo '{PATH}' >> /home/{HOSTN}/HomeAlone/code/filelist.txt\n"
+	
 		utils.arr2str(utils.cmd(c,False))
 		PATH = f'/home/{HOSTN}/HomeAlone/code/logs/web/{filename}'
-		c2 = f"ssh {HOSTN}@{SERVER} echo '{PATH}' >> /home/{HOSTN}/HomeAlone/code/filelist.txt"
 		utils.cmd(c2)
 		n = int(utils.cmd("cat %s| grep 'Connection at ' | wc -l" % filename, False).pop())
 		await ctx.send(':ok_hand: *Setting Alarm on %s*, which currently has **%d** entries.' % (filename, n))

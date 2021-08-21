@@ -52,7 +52,7 @@ def client_handler(csock, caddr, logfile):
 		pass
 		parsed = '{"%s" : "%s"' % (caddr[0], request)
 	entry = ('Connection at %s - %s :\n'%(ld,lt)) +parsed+'\n'+'='*80+'\n'
-	open('logs/'+logfile, 'a').write(entry)
+	open('logs/web/'+logfile, 'a').write(entry)
 	return True
 
 class BasicTrap:
