@@ -60,7 +60,7 @@ class BasicTrap:
 	served = []
 	uptime = 0.0
 
-	def __init__(self, p):
+	def __init__(self, p,useBot):
 		if not os.path.isdir('logs'):
 			os.mkdir('logs')
 		self.inbound = p
@@ -98,7 +98,8 @@ class BasicTrap:
 def main():
 	port = 80
 	if '-run' in sys.argv:
-		BasicTrap(port)
+		os.system('python3 tripwire.py -bg')
+		BasicTrap(port,useBot=True).run()
 
 if __name__ == '__main__':
 	main()

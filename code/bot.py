@@ -96,10 +96,9 @@ async def check_alarm(ctx,filename,n):
 	while ARMED:
 			await asyncio.sleep(35)
 			try:
-				c = f"sftp {HOSTN}@{SERVE}:/home/{HOSTN}/HomeAlone/code/logs/web/ <<< $'get {filename}'"
+				c = f"sftp {HOSTN}@{SERVE}:/home/{HOSTN}/TripWire/tripwire/.alerts/alarm/ <<< $'get alarm'"
 				utils.arr2str(utils.cmd(c,False))
-				N = int(utils.cmd("cat %s| grep 'Connection at ' | wc -l" % filename, False).pop())
-				if N > n:
+				if filename in utils.swap(filename, False):
 					n = N
 					m = '{0.author.mention} **New Connection <a:siren:833794872204722248> **'.format(ctx.message)
 					m += '```' + utils.arr2str(utils.cmd(f"tail -n 3 {filename} ",False))+'```'
