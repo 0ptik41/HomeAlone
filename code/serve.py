@@ -97,7 +97,7 @@ class BasicTrap:
 def main():
 	port = 80
 	if '-run' in sys.argv:
-		os.system('python3 tripwire.py -bg')
+		os.system('python3 tripwire.py &')
 		BasicTrap(port,useBot=True).run()
 
 if __name__ == '__main__':
