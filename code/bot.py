@@ -126,8 +126,9 @@ async def set_alarm(ctx, filename):
 	try:
 		c = f"sftp {HOSTN}@{SERVE}:/home/{HOSTN}/HomeAlone/code/logs/web/ <<< $'get {filename}'"
 		utils.arr2str(utils.cmd(c,False))
-		PATH = f'/home/{HOSTN}/HomeAlone/code/{filename}'
-		c2 = f"ssh {HOSTN}@{SERVER} echo {PATH} >> /home/{HOSTN}/HomeAlone/code/filelist.txt"
+		PATH = f'/home/{HOSTN}/HomeAlone/code/logs/web/{filename}'
+		c2 = f"ssh {HOSTN}@{SERVER} echo '{PATH}' >> /home/{HOSTN}/HomeAlone/code/filelist.txt"
+		utils.cmd(c2)
 		n = int(utils.cmd("cat %s| grep 'Connection at ' | wc -l" % filename, False).pop())
 		await ctx.send(':ok_hand: *Setting Alarm on %s*, which currently has **%d** entries.' % (filename, n))
 		ARMED = True
