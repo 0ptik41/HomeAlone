@@ -70,6 +70,7 @@ def verifyFiles(lb,timestamps):
 	for filename in timestamps.keys():
 		lmodified = getLastModified(lb,filename)
 		laccessed = getLastOpened(lb,filename)
+		print(laccessed)
 		if laccessed != timestamps[filename]['opened']:
 			timestamps[filename]['wasOpened'] = True
 			timestamps[filename]['opened'] = laccessed

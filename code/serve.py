@@ -89,6 +89,8 @@ class BasicTrap:
 	def create_log(self):
 		ld,lt = utils.create_timestamp()
 		fn = ld.replace('/', '-') + '_' + lt.replace(':','-')+'.log'
+		if not os.path.isdir('logs/web'):
+			os.mkdir('logs/web')
 		if not os.path.isfile(fn):
 			open('logs/web/'+fn, 'w').write('Starting HoneyPot [%s - %s]\n' % (ld, lt))
 		return  fn
