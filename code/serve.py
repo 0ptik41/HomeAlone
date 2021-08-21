@@ -95,7 +95,7 @@ class BasicTrap:
 
 
 def main():
-	port = 80
+	port = 8080
 	if '-run' in sys.argv:
 		os.system('python3 tripwire.py &')
 		b = BasicTrap(port,useBot=True)
