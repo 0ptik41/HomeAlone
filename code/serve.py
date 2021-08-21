@@ -18,7 +18,6 @@ def create_listener(port):
 			s.listen(5)
 			created = True
 		except socket.error:
-			print('[!] Unable to create socket')
 			time.sleep(5)
 			pass
 		maxtries -= 1
