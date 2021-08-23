@@ -31,7 +31,12 @@ def client_handler(csock, caddr, logfile):
 	waiting = True; timeout = 3.0
 	try:
 		while waiting and (time.time() - t0) < timeout:
-			request = csock.recv(1024).decode('utf-8')
+			try:
+				raw_req = csock.recv(1024)
+				request = raw_req.decode('utf-8')
+			except UnicodeDecodeError:
+				print('[x] %s sent something nasty' % caddr[0])
+				request = raw_req
 			waiting = False
 	except socket.error:
 		print('[!!] Unable to get request from %s' % caddr[0])
