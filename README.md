@@ -41,6 +41,38 @@ ABUSE=FREE_ABUSE_IPDB_API_TOKEN
 ``` 
 Last one is optional (and not fully functional yet). 
 
+
+## Adding Virtualization 
+I'm working on ways to have this code run inside a VM instead, and perhaps use something like Cuckoo to automate the analysis of requests, and links the honeypot catches.
+
+### Setting up Virtual Machine on Remote Server 
+A more secure way to run this software would be to have the honeypot contained in a VM, run from a user with low privileges. Let's step through how we can set this up.
+
+#### Adding a new User
+Setting up a non-root user, in this case a user named `homealone` for running our sandboxed honeypot application. Run the following on the remote server (as root) to ensure this lower priveleged user will be able to user packet capture without being denied permissions. 
+```
+$ sudo groupadd homealone
+$ sudo usermod -a -G pcap homealone
+$ sudo chgrp pcap /usr/sbin/tcpdump
+$ sudo setcap cap_net_raw,cap_net_admin=eip /usr/sbin/tcpdump
+```
+If this worked, you should be able to login as the `homealone` user and run the following as a check that you can run `tcpdump` as non-root user:
+```
+$ getcap /usr/sbin/tcpdump
+/usr/sbin/tcpdump = cap_net_admin,cap_net_raw+eip
+```
+
+Then install VirtualBox on the server you intend to use for hosting the Honeypot. 
+
+Once Installed, we need to setup our virtual machine. I'm going to setup Ubuntu 20.04. First we can use `VboxManager` to create the VM.
+```bash
+ VBoxManage createvm --name "Ubuntu 20.04" --ostype Ubuntu_64 --register
+```
+
+
+
+
+
 ### Creating a discord bot 
 Once you have the code running on your honeypot, you can go [here](https://discord.com/developers/applications) and add the DiscordBot add-on. 
 

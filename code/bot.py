@@ -114,6 +114,26 @@ async def kill_process(ctx):
 	utils.cmd(c%(HOSTN,SERVE),False)
 	await ctx.send('Honeypot **Killed**')
 
+@bot.command(name='get-pcap', pass_context=True)
+async def pull_pcap(ctx):
+	c = f"sftp {HOSTN}@{SERVE}:/home/{HOSTN}/ <<< $'get honey.pcap'"
+	reply = utils.arr2str(utils.cmd(c,False))
+	await ctx.send("'''%s'''" % reply)
+
+@bot.command(name='start-listener', pass_context=True)
+async def start_tcpdump(ctx):
+	# c = 'iface=$(ip route get 1.1.1.1 | awk {print $5; exit});'
+	# c+= f'tcpdump -ne -i $iface -Q in host {SERVE} and port 8080 -w honey.pcap'
+	c = f"ssh {HOSTN}@{SERVE} bash listen.sh &"
+	reply = utils.arr2str(utils.cmd(c,False))
+	await ctx.send("'''%s'''" % reply)
+
+@bot.command(name='kill-listener',pass_context=True)
+async def kill_tcpdump(ctx):
+	c = f"ssh {HOSTN}@{SERVE} kill -9 $(pidof tcpdump)"
+	reply = utils.arr2str(utils.cmd(c,False))
+	await ctx.send("'''%s'''" % reply)	
+
 @bot.command(name='scan', pass_context=True)
 async def scan_host(ctx, ip):
 	await ctx.send('<a:radar:794818374420529162> *Scanning* **%s**' % ip)
