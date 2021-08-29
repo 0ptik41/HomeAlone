@@ -25,12 +25,21 @@ ARMED = True; TRIGGER = 0
 bot = commands.Bot(command_prefix = "$")
 
 
+def isPotActive():
+	c = f'ping -c 1 {SERVE}; echo $?'
+	return int(utils.cmd(c,False).pop()) == 0
+
+
 @bot.event
 async def on_ready():
 	guild = get(bot.guilds, name=GUILD)
 	print(guild)
 	print(f'{bot.user} has connected to Discord!')		
 	print(f'{guild.name}(id: {guild.id})')
+	if isPotActive():
+		print('[+] Remote Server is \033[1m\033[34mONLINE\033[0m')
+	else:
+		print('[+] Remote Server is \033[1m\033[31mOFFLINE\033[0m')
 
 
 @bot.command(name='abusive-acts', pass_context=True)
@@ -159,6 +168,13 @@ async def set_alarm(ctx, filename):
 		result = 'Something went wrong... Select one of these to set alarm on:\n'
 		result += '```' + (utils.arr2str(utils.cmd(c,False)))+'```'	
 		pass
+
+@bot.command(name='is-honeypot-online', pass_context=True)
+async def report_pot_state(ctx):
+	if not isPotActive():
+		await ctx.send('<a:warning:881645651975344218> Honeypot is **Offline**')
+	else:
+		await ctx.send('<a:satellite:881645899137302538> Honeypot is **Online**')
 
 
 @bot.command(name='disarm',pass_context=True)
