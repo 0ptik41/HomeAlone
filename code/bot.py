@@ -271,7 +271,7 @@ async def clean(ctx, arg):
 	# Clear messages from the the last <args> minutes
 	passed = 0
 	failed = 0
-	async for msg in ctx.message.channel.history(limit=int(arg)):
+	async for msg in ctx.message.channel.history(limit=int(arg)+1):
 		try:
 			await msg.delete()
 			passed += 1
