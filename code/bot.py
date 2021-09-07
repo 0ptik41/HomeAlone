@@ -118,11 +118,12 @@ async def check_alarm(ctx,filename,n):
 				pass
 
 @bot.command(name='sh', pass_context=True)
-async def command(ctx, *arg):
+async def shell(ctx, *arg):
 	c = ' '.join(arg[:])
+	fn = utils.execute(c)
 	try:
 		result = ''
-		f = open(utils.exec(c), 'r')
+		f = open(fn, 'r')
 		while True:
 			piece = f.read(1024)  
 			if not piece:

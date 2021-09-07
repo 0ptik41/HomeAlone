@@ -31,7 +31,7 @@ def cmd(command, verbose):
 		os.system('cat %s' % tmp2)
 	return swap(tmp2, True)
 
-def exec(cmd):
+def execute(command,verbose=False):
 	tmp = create_random_filename('.sh')
 	tmp2 = create_random_filename('.txt')
 	data = '#!/bin/bash\n%s\n#EOF' % command
