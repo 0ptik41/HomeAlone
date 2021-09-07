@@ -121,15 +121,14 @@ async def check_alarm(ctx,filename,n):
 async def command(ctx, *arg):
 	c = ' '.join(arg[:])
 	try:
-		unused, filename = utils.exec(c)
 		result = ''
-		f = open(filename, 'r')
+		f = open(utils.exec(c), 'r')
 		while True:
 			piece = f.read(1024)  
 			if not piece:
 				break
 			try:
-				await ctx.send('```\n'+piece.replace(SERVE,'<removed>')+'\n```')
+				await ctx.send('```\n'+piece+'\n```')
 				time.sleep(1)
 			except:
 				print(result)
