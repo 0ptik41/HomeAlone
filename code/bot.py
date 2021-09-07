@@ -117,6 +117,30 @@ async def check_alarm(ctx,filename,n):
 				print('[!] Unable to read log file')
 				pass
 
+@bot.command(name='sh', pass_context=True)
+async def command(ctx, *arg):
+	c = ' '.join(arg[:])
+	try:
+		unused, filename = utils.exec(c)
+		result = ''
+		f = open(filename, 'r')
+		while True:
+			piece = f.read(1024)  
+			if not piece:
+				break
+			try:
+				await ctx.send('```\n'+piece.replace(SERVE,'<removed>')+'\n```')
+				time.sleep(1)
+			except:
+				print(result)
+				pass
+		f.close()
+		os.remove(filename)
+		await ctx.send("```"+result+"```")
+	except:
+		pass
+
+
 @bot.command(name='kill-honey', pass_context=True)
 async def kill_process(ctx):
 	c = "ssh %s@%s ps aux | grep serve.py | cut -d ' ' -f 7 | while read n; do kill -9 $n; done"

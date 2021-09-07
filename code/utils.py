@@ -31,6 +31,17 @@ def cmd(command, verbose):
 		os.system('cat %s' % tmp2)
 	return swap(tmp2, True)
 
+def exec(cmd):
+	tmp = create_random_filename('.sh')
+	tmp2 = create_random_filename('.txt')
+	data = '#!/bin/bash\n%s\n#EOF' % command
+	open(tmp, 'w').write(data)
+	os.system('bash %s >> %s' % (tmp,tmp2))
+	os.remove(tmp)
+	if verbose:	
+		os.system('cat %s' % tmp2)
+	return tmp2	
+
 def arr2str(content):
 	result = ''
 	for element in content:
